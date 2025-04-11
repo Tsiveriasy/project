@@ -1,0 +1,46 @@
+from django.db import models
+from universities.models import University
+
+class Program(models.Model):
+    LEVEL_CHOICES = (
+        ('licence', 'Licence (Bac+3)'),
+        ('master', 'Master (Bac+5)'),
+        ('doctorat', 'Doctorat (Bac+8)'),
+        ('bts', 'BTS'),
+        ('dut', 'DUT'),
+        ('ingenieur', 'Diplôme d\'Ingénieur'),
+        ('other', 'Autre'),
+    )
+    
+    FIELD_CHOICES = (
+        ('science', 'Sciences'),
+        ('engineering', 'Ingénierie'),
+        ('business', 'Commerce'),
+        ('law', 'Droit'),
+        ('medicine', 'Médecine'),
+        ('arts', 'Arts et Lettres'),
+        ('social', 'Sciences Sociales'),
+        ('education', 'Éducation'),
+        ('other', 'Autre'),
+    )
+    
+    title = models.CharField(max_length=255)
+    university = models.ForeignKey(University, on_delete=models.CASCADE, related_name='programs')
+    description = models.TextField(blank=True)
+    level = models.CharField(max_length=20, choices=LEVEL_CHOICES)
+    field = models.CharField(max_length=20, choices=FIELD_CHOICES)
+    duration = models.CharField(max_length=50)
+    student_count = models.IntegerField(default=0)
+    image = models.ImageField(upload_to='programs/', blank=True, null=True)
+    status = models.CharField(max_length=20, default='active', choices=(
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+    ))
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['title']
+    
+    def __str__(self):
+        return f"{self.title} - {self.university.name}"

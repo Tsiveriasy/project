@@ -1,0 +1,48 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@example.com",
+      "password": "$2a$10$aMlJhQeAY1M9kGJIiS6Cj.d1ZvXnDO.1ByJtIAn/J/7UHSHxfA3fO",
+      "username": "admin",
+      "firstName": "Admin",
+      "lastName": "User",
+      "role": "admin",
+      "savedPrograms": [],
+      "savedUniversities": []
+    },
+    {
+      "id": 2,
+      "email": "user@example.com",
+      "password": "$2a$10$aMlJhQeAY1M9kGJIiS6Cj.d1ZvXnDO.1ByJtIAn/J/7UHSHxfA3fO",
+      "username": "user",
+      "firstName": "Test",
+      "lastName": "User",
+      "role": "user",
+      "savedPrograms": [],
+      "savedUniversities": []
+    }
+  ],
+  "universities": [
+    {
+      "id": 1,
+      "name": "Université Paris-Saclay",
+      "description": "L'Université Paris-Saclay est une université française située dans le département de l'Essonne.",
+      "location": "Paris, France",
+      "rating": 4.5,
+      "programs": [1, 2]
+    }
+  ],
+  "programs": [
+    {
+      "id": 1,
+      "name": "Master en Informatique",
+      "description": "Formation approfondie en informatique",
+      "university": 1,
+      "duration": "2 ans",
+      "level": "Master",
+      "language": "Français",
+      "tuition": 243
+    }
+  ]
+}

@@ -1,0 +1,306 @@
+[
+    {
+        "model": "universities.university",
+        "pk": 1,
+        "fields": {
+            "name": "Université d'Antananarivo",
+            "location": "101 Antananarivo, Ankatso",
+            "type": "Université publique",
+            "description": "Fondée en 1961, l'Université d'Antananarivo est la plus prestigieuse université de Madagascar. Elle comprend plusieurs domaines d'études répartis en facultés et écoles supérieures. Le campus principal est situé à Ankatso, avec des installations modernes et un corps professoral hautement qualifié.",
+            "image": "https://i.imgur.com/yR2wGzX.jpg",
+            "website": "http://www.univ-antananarivo.mg",
+            "rating": 4.5,
+            "student_count": "30000",
+            "specialties": [
+                "Sciences et Technologies",
+                "Médecine",
+                "Droit et Sciences Politiques",
+                "Lettres et Sciences Humaines",
+                "Sciences Économiques",
+                "STEM"
+            ],
+            "facilities": [
+                "Bibliothèque centrale",
+                "Laboratoires de recherche",
+                "Centre de calcul",
+                "Amphithéâtres modernes",
+                "Restaurant universitaire",
+                "Centre médico-social",
+                "Terrains de sport",
+                "Résidences universitaires"
+            ],
+            "research_focus": [
+                "Biodiversité et environnement",
+                "Énergies renouvelables",
+                "Santé publique",
+                "Développement durable",
+                "Sciences fondamentales",
+                "Technologies innovantes"
+            ],
+            "international_partnerships": [
+                "Université de Paris (France)",
+                "Université de Montréal (Canada)",
+                "École Polytechnique Fédérale de Lausanne (Suisse)",
+                "Université de Liège (Belgique)"
+            ],
+            "employment_rate": 75,
+            "admission_requirements": [
+                "Baccalauréat toutes séries",
+                "Concours d'entrée pour certaines filières",
+                "Dossier de candidature complet"
+            ],
+            "academic_calendar": {
+                "start_date": "Octobre",
+                "end_date": "Juillet",
+                "application_deadline": "Août"
+            },
+            "contact_info": {
+                "address": "BP 566, Ankatso, Antananarivo 101",
+                "phone": "+261 20 22 326 39",
+                "email": "contact@univ-antananarivo.mg"
+            },
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "universities.university",
+        "pk": 2,
+        "fields": {
+            "name": "Institut Supérieur de Technologie d'Antananarivo",
+            "location": "BP 8122, Antananarivo 101",
+            "type": "École d'ingénieur",
+            "description": "L'IST-T est un établissement de référence pour la formation d'ingénieurs à Madagascar. Il offre des formations pratiques et théoriques de haut niveau, avec un accent particulier sur l'innovation technologique et la recherche appliquée.",
+            "image": "https://i.imgur.com/nK3jF7M.jpg",
+            "website": "https://ist-tana.mg",
+            "rating": 4.3,
+            "student_count": "2000",
+            "specialties": [
+                "Génie Civil et BTP",
+                "Génie Électrique et Industriel",
+                "Génie Mécanique et Productique",
+                "Génie des Procédés Chimiques",
+                "Télécommunications",
+                "Informatique Industrielle"
+            ],
+            "facilities": [
+                "Laboratoires spécialisés",
+                "Ateliers techniques",
+                "Centre de documentation technique",
+                "Salles informatiques",
+                "Fablab",
+                "Incubateur de startups"
+            ],
+            "research_focus": [
+                "Énergies renouvelables",
+                "Matériaux innovants",
+                "Automatisation industrielle",
+                "Technologies numériques",
+                "Construction durable"
+            ],
+            "international_partnerships": [
+                "École Centrale de Paris (France)",
+                "Technical University of Munich (Allemagne)",
+                "École Polytechnique de Montréal (Canada)"
+            ],
+            "employment_rate": 85,
+            "admission_requirements": [
+                "Baccalauréat série C ou D",
+                "Concours national d'entrée",
+                "Niveau minimum en mathématiques et physique"
+            ],
+            "academic_calendar": {
+                "start_date": "Septembre",
+                "end_date": "Juin",
+                "application_deadline": "Juillet"
+            },
+            "contact_info": {
+                "address": "BP 8122, Route d'Ambohidratrimo, Antananarivo 101",
+                "phone": "+261 20 22 411 87",
+                "email": "direction@ist-tana.mg"
+            },
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "universities.university",
+        "pk": 3,
+        "fields": {
+            "name": "Université de Toamasina",
+            "location": "Boulevard Philippot, Toamasina 501",
+            "type": "Université publique",
+            "description": "Située dans la ville portuaire de Toamasina, cette université se distingue par ses formations en lien avec l'économie maritime et le commerce international. Elle joue un rôle crucial dans le développement de la région Est de Madagascar.",
+            "image": "https://i.imgur.com/pL4kR2N.jpg",
+            "website": "https://univ-toamasina.mg",
+            "rating": 4.0,
+            "student_count": "15000",
+            "specialties": [
+                "Sciences Marines",
+                "Gestion Portuaire",
+                "Commerce International",
+                "Tourisme et Hôtellerie",
+                "Sciences de Gestion",
+                "Agronomie Tropicale"
+            ],
+            "facilities": [
+                "Campus maritime",
+                "Bibliothèque universitaire",
+                "Laboratoires spécialisés",
+                "Centre de langues",
+                "Restaurant universitaire",
+                "Installations sportives"
+            ],
+            "research_focus": [
+                "Économie maritime",
+                "Biodiversité marine",
+                "Développement portuaire",
+                "Commerce international",
+                "Tourisme durable"
+            ],
+            "international_partnerships": [
+                "Université Maritime Mondiale (Suède)",
+                "Université de La Réunion (France)",
+                "Shanghai Maritime University (Chine)"
+            ],
+            "employment_rate": 70,
+            "admission_requirements": [
+                "Baccalauréat toutes séries",
+                "Sélection sur dossier",
+                "Test de langue pour certaines filières"
+            ],
+            "academic_calendar": {
+                "start_date": "Octobre",
+                "end_date": "Juillet",
+                "application_deadline": "Août"
+            },
+            "contact_info": {
+                "address": "Boulevard Philippot, BP 591, Toamasina 501",
+                "phone": "+261 20 53 311 37",
+                "email": "contact@univ-toamasina.mg"
+            },
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "universities.university",
+        "pk": 4,
+        "fields": {
+            "name": "Institut National des Sciences Comptables et de l'Administration d'Entreprises",
+            "location": "Lot IVP 85 Ter A, Ankatso, Antananarivo 101",
+            "type": "École de commerce",
+            "description": "L'INSCAE est l'école de référence en gestion et commerce à Madagascar. Elle forme l'élite des gestionnaires et entrepreneurs du pays, avec un focus sur l'excellence académique et l'insertion professionnelle.",
+            "image": "https://i.imgur.com/mH2jK9L.jpg",
+            "website": "https://inscae.mg",
+            "rating": 4.4,
+            "student_count": "3000",
+            "specialties": [
+                "Finance d'Entreprise",
+                "Comptabilité et Audit",
+                "Marketing Digital",
+                "Management Stratégique",
+                "Commerce International",
+                "Entrepreneuriat"
+            ],
+            "facilities": [
+                "Centre de documentation",
+                "Salles informatiques",
+                "Amphithéâtres modernes",
+                "Espace de coworking",
+                "Incubateur d'entreprises",
+                "Salle des marchés"
+            ],
+            "research_focus": [
+                "Innovation managériale",
+                "Entrepreneuriat social",
+                "Finance durable",
+                "Transformation digitale",
+                "Économie africaine"
+            ],
+            "international_partnerships": [
+                "HEC Paris (France)",
+                "ESSEC Business School (France)",
+                "University of Mauritius Business School"
+            ],
+            "employment_rate": 80,
+            "admission_requirements": [
+                "Baccalauréat avec mention",
+                "Concours national d'entrée",
+                "Entretien de motivation"
+            ],
+            "academic_calendar": {
+                "start_date": "Septembre",
+                "end_date": "Juin",
+                "application_deadline": "Juillet"
+            },
+            "contact_info": {
+                "address": "Lot IVP 85 Ter A, Ankatso, Antananarivo 101",
+                "phone": "+261 20 22 287 27",
+                "email": "contact@inscae.mg"
+            },
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "universities.university",
+        "pk": 5,
+        "fields": {
+            "name": "Université de Fianarantsoa",
+            "location": "BP 1264, Andrainjato, Fianarantsoa 301",
+            "type": "Université publique",
+            "description": "L'Université de Fianarantsoa est réputée pour son expertise en informatique et en développement rural. Elle contribue activement au développement de la région des Hautes Terres centrales de Madagascar.",
+            "image": "https://i.imgur.com/kL5mP9Q.jpg",
+            "website": "https://univ-fianar.mg",
+            "rating": 4.1,
+            "student_count": "12000",
+            "specialties": [
+                "Informatique et Programmation",
+                "Agronomie et Développement Rural",
+                "Sciences de l'Éducation",
+                "Génie Rural",
+                "Management Public",
+                "Technologies Numériques"
+            ],
+            "facilities": [
+                "Campus vert",
+                "Laboratoires informatiques",
+                "Ferme expérimentale",
+                "Centre de recherche agricole",
+                "Bibliothèque numérique",
+                "Centres de formation pratique"
+            ],
+            "research_focus": [
+                "Agriculture durable",
+                "Développement rural",
+                "Intelligence artificielle",
+                "Éducation numérique",
+                "Sécurité alimentaire"
+            ],
+            "international_partnerships": [
+                "AgroParisTech (France)",
+                "Université de Namur (Belgique)",
+                "African Virtual University"
+            ],
+            "employment_rate": 65,
+            "admission_requirements": [
+                "Baccalauréat toutes séries",
+                "Sélection sur dossier",
+                "Test d'aptitude pour certaines filières"
+            ],
+            "academic_calendar": {
+                "start_date": "Octobre",
+                "end_date": "Juillet",
+                "application_deadline": "Septembre"
+            },
+            "contact_info": {
+                "address": "BP 1264, Andrainjato, Fianarantsoa 301",
+                "phone": "+261 20 75 505 00",
+                "email": "contact@univ-fianar.mg"
+            },
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    }
+]

@@ -1,0 +1,82 @@
+[
+    {
+        "model": "programs.program",
+        "pk": 1,
+        "fields": {
+            "university": 1,
+            "name": "Licence en Informatique",
+            "description": "Formation en informatique couvrant la programmation, les bases de données, et le développement web",
+            "duration": "3 ans",
+            "degree_level": "Licence",
+            "admission_requirements": ["Baccalauréat série C ou D", "Concours d'entrée"],
+            "tuition_fees": 400000,
+            "language": "Français",
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "programs.program",
+        "pk": 2,
+        "fields": {
+            "university": 1,
+            "name": "Doctorat en Médecine",
+            "description": "Formation complète en médecine générale et spécialisée",
+            "duration": "8 ans",
+            "degree_level": "Doctorat",
+            "admission_requirements": ["Baccalauréat série C ou D", "Concours très sélectif"],
+            "tuition_fees": 500000,
+            "language": "Français",
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "programs.program",
+        "pk": 3,
+        "fields": {
+            "university": 2,
+            "name": "Diplôme d'Ingénieur en Génie Civil",
+            "description": "Formation d'ingénieur spécialisée dans la construction et l'infrastructure",
+            "duration": "5 ans",
+            "degree_level": "Master",
+            "admission_requirements": ["Baccalauréat série C", "Concours national"],
+            "tuition_fees": 450000,
+            "language": "Français",
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "programs.program",
+        "pk": 4,
+        "fields": {
+            "university": 3,
+            "name": "Licence en Gestion Portuaire",
+            "description": "Formation spécialisée dans la gestion des activités portuaires",
+            "duration": "3 ans",
+            "degree_level": "Licence",
+            "admission_requirements": ["Baccalauréat toutes séries", "Sélection sur dossier"],
+            "tuition_fees": 350000,
+            "language": "Français",
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    },
+    {
+        "model": "programs.program",
+        "pk": 5,
+        "fields": {
+            "university": 4,
+            "name": "Master en Finance et Comptabilité",
+            "description": "Formation approfondie en finance d'entreprise et comptabilité internationale",
+            "duration": "2 ans",
+            "degree_level": "Master",
+            "admission_requirements": ["Licence en gestion ou équivalent", "Concours d'entrée"],
+            "tuition_fees": 600000,
+            "language": "Français",
+            "created_at": "2025-03-17T08:30:00Z",
+            "updated_at": "2025-03-17T08:30:00Z"
+        }
+    }
+]
