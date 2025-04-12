@@ -19,5 +19,8 @@ export const API_CONFIG = {
     BASE: "/api/universities/",
     FEATURED: "/api/universities/",  // Changed to use base endpoint since featured doesn't exist
     PROGRAMS: "/api/programs/"
+  },
+  SEARCH: {
+    GLOBAL: "/api/search/"
   }
 };

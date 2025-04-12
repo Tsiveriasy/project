@@ -433,31 +433,15 @@ export const programService = {
 
 // Service de recherche
 export const searchService = {
-  // Modifier la fonction globalSearch pour utiliser les données mockées
-  async globalSearch(query: string) {
+  globalSearch: async (queryParams: string) => {
     try {
-      // Rechercher dans les universités
-      const universitiesResponse = await api.get("/universities", {
-        params: { q: query },
-      })
-
-      // Rechercher dans les programmes
-      const programsResponse = await api.get("/programs", {
-        params: { q: query },
-      })
-
-      return {
-        universities: universitiesResponse.data,
-        programs: programsResponse.data,
-      }
-    } catch (error: any) {
-      console.error("Error performing global search:", error)
-      return {
-        universities: [],
-        programs: [],
-      }
+      const response = await api.get(`${API_CONFIG.SEARCH.GLOBAL}?${queryParams}`)
+      return response.data
+    } catch (error) {
+      console.error("Erreur lors de la recherche:", error)
+      throw error
     }
-  },
+  }
 }
 
 // Service d'orientation

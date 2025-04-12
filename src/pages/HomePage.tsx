@@ -1,44 +1,57 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { GraduationCap, Users, TrendingUp, Award, MapPin, ArrowRight, Star, School } from "lucide-react"
 import { universityService, type University } from "../services/api-services"
+import SearchBar from "../components/SearchBar"
 
 const HomePage = () => {
   const [featuredUniversities, setFeaturedUniversities] = useState<University[]>([]);
-const [isLoading, setIsLoading] = useState(true);
-const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate()
 
-useEffect(() => {
-  const fetchFeaturedUniversities = async () => {
-    try {
-      setIsLoading(true);
-      const universities = await universityService.getFeatured();
-      console.log('Universités en vedette:', universities);
-      setFeaturedUniversities(universities);
-    } catch (error) {
-      console.error('Error fetching featured universities:', error);
-      setError('Impossible de charger les universités en vedette');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  useEffect(() => {
+    const fetchFeaturedUniversities = async () => {
+      try {
+        setIsLoading(true);
+        const universities = await universityService.getFeatured();
+        console.log('Universités en vedette:', universities);
+        setFeaturedUniversities(universities);
+      } catch (error) {
+        console.error('Error fetching featured universities:', error);
+        setError('Impossible de charger les universités en vedette');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  fetchFeaturedUniversities();
-}, [])
+    fetchFeaturedUniversities();
+  }, [])
+
+  const handleSearch = (query: string) => {
+    navigate(`/search?q=${encodeURIComponent(query)}`)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-16">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl">
+          <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl font-bold mb-4">Trouvez l'université qui vous correspond</h1>
             <p className="text-xl mb-8">
               Comparez les universités, explorez les programmes et découvrez votre parcours idéal
             </p>
-            <div className="flex space-x-4">
+            <div className="mb-8">
+              <SearchBar
+                onSearch={handleSearch}
+                className="max-w-2xl mx-auto"
+                placeholder="Recherchez une université, une formation ou un domaine d'études..."
+              />
+            </div>
+            <div className="flex justify-center space-x-4">
               <Link
                 to="/orientation"
                 className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition duration-300"
@@ -207,4 +220,3 @@ useEffect(() => {
 }
 
 export default HomePage
-

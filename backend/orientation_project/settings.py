@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'universities',
     'programs',
     'orientation_tests',
+    'search',
 ]
 
 MIDDLEWARE = [
@@ -141,6 +142,10 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+# Gemini API Configuration
+GEMINI_API_KEY = 'AIzaSyBQonNE1kml5geF_Vu3cDeA5av0Tj-gdfk'  # Remplacez par votre clé API Gemini
+GEMINI_MODEL = 'gemini-pro'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

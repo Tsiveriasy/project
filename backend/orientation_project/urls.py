@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/universities/', include('universities.urls')),
     path('api/programs/', include('programs.urls')),
     path('api/orientation-tests/', include('orientation_tests.urls')),
+    path('api/search/', include('search.urls')),
 ]
 
 if settings.DEBUG:
