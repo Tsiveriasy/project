@@ -33,7 +33,7 @@ class GlobalSearchView(APIView):
             programs = self._search_programs(query, min_tuition, max_tuition, degree_level, location)
 
             logger.info(f"Résultats initiaux - Universités: {universities.count()}, Programmes: {programs.count()}")
-
+ 
             # Si aucun résultat direct n'est trouvé, effectuer une recherche élargie
             if not universities.exists() and not programs.exists():
                 logger.info("Aucun résultat direct trouvé, passage à la recherche élargie")

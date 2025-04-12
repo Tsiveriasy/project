@@ -58,6 +58,9 @@ interface University {
     email: string
   }
   programs: Program[]
+  programs_by_level: {
+    [level: string]: Program[]
+  }
 }
 
 const UniversityDetailPage = () => {
@@ -66,6 +69,7 @@ const UniversityDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
+  const [selectedLevel, setSelectedLevel] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchUniversity = async () => {
@@ -250,52 +254,112 @@ const UniversityDetailPage = () => {
             {activeTab === "programs" && (
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Formations proposées</h2>
-                <div className="space-y-6">
-                  {university.programs?.map((program) => (
-                    <div key={program.id} className="bg-white rounded-lg shadow-md p-6">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-3">{program.name}</h3>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div className="flex items-center">
-                          <GraduationCap className="h-5 w-5 text-blue-500 mr-2" />
-                          <span>Niveau : {program.degree_level}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Clock className="h-5 w-5 text-blue-500 mr-2" />
-                          <span>Durée : {program.duration}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <span className="font-medium text-blue-500 mr-2">€</span>
-                          <span>Frais : {program.tuition_fees?.toLocaleString("fr-FR")} Ar/an</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Globe className="h-5 w-5 text-blue-500 mr-2" />
-                          <span>Langue : {program.language}</span>
-                        </div>
-                      </div>
-
-                      <div className="mb-4">
-                        <h4 className="font-medium text-gray-700 mb-2">Description :</h4>
-                        <p className="text-gray-600">{program.description}</p>
-                      </div>
-
-                      <div>
-                        <h4 className="font-medium text-gray-700 mb-2">Conditions d'admission :</h4>
-                        <ul className="list-disc list-inside text-gray-600">
-                          {program.admission_requirements?.requirements?.map((requirement, index) => (
-                            <li key={index}>{requirement}</li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <div className="mt-4 flex justify-end">
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
-                          Postuler
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                
+                {/* Filtres de niveau d'études */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-700 mb-3">Filtrer par niveau</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.keys(university.programs_by_level || {}).map((level) => (
+                      <button
+                        key={level}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                          ${selectedLevel === level
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        onClick={() => setSelectedLevel(level)}
+                      >
+                        {level}
+                      </button>
+                    ))}
+                    <button
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
+                        ${selectedLevel === null
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      onClick={() => setSelectedLevel(null)}
+                    >
+                      Tous
+                    </button>
+                  </div>
                 </div>
+
+                {/* Liste des programmes */}
+                <div className="space-y-8">
+                  {Object.entries(university.programs_by_level || {})
+                    .filter(([level]) => selectedLevel === null || level === selectedLevel)
+                    .map(([level, programs]) => (
+                      <div key={level} className="bg-white rounded-lg shadow-md p-6">
+                        <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                          <GraduationCap className="h-6 w-6 text-blue-500 mr-2" />
+                          {level}
+                          <span className="ml-2 text-sm text-gray-500">
+                            ({programs.length} formation{programs.length > 1 ? 's' : ''})
+                          </span>
+                        </h3>
+
+                        <div className="grid gap-6">
+                          {programs.map((program: Program) => (
+                            <div key={program.id} className="border-t pt-4">
+                              <div className="flex justify-between items-start mb-3">
+                                <h4 className="text-lg font-semibold text-gray-800">{program.name}</h4>
+                                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors text-sm">
+                                  Postuler
+                                </button>
+                              </div>
+
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                                <div className="flex items-center text-gray-600">
+                                  <Clock className="h-5 w-5 text-blue-500 mr-2" />
+                                  <span>Durée : {program.duration}</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                  <span className="font-medium text-blue-500 mr-2">€</span>
+                                  <span>Frais : {program.tuition_fees?.toLocaleString("fr-FR")} Ar/an</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                  <Globe className="h-5 w-5 text-blue-500 mr-2" />
+                                  <span>Langue : {program.language}</span>
+                                </div>
+                              </div>
+
+                              <div className="mb-4">
+                                <p className="text-gray-600">{program.description}</p>
+                              </div>
+
+                              <div className="mt-4">
+                                <h5 className="font-medium text-gray-700 mb-2">Conditions d'admission :</h5>
+                                <ul className="list-disc list-inside text-gray-600 space-y-1">
+                                  {program.admission_requirements?.requirements?.map((requirement, index) => (
+                                    <li key={index}>{requirement}</li>
+                                  ))}
+                                </ul>
+                              </div>
+
+                              <div className="mt-4 flex gap-2">
+                                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                                  <ExternalLink className="h-4 w-4 mr-1" />
+                                  Plus de détails
+                                </button>
+                                <button className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+                                  <Share className="h-4 w-4 mr-1" />
+                                  Partager
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Message si aucun programme */}
+                {(!university.programs || university.programs.length === 0) && (
+                  <div className="text-center py-8">
+                    <p className="text-gray-500">Aucun programme n'est disponible pour le moment.</p>
+                  </div>
+                )}
               </div>
             )}
 
@@ -676,4 +740,3 @@ const UniversityDetailPage = () => {
 }
 
 export default UniversityDetailPage
-

@@ -72,3 +72,6 @@ class University(models.Model):
             score += len(self.international_partnerships) * 5
         
         return score
+    
+    def count_programs(self):
+        return self.programs.count()
