@@ -121,9 +121,11 @@ const ProfilePage = () => {
       const [firstName, ...lastNameParts] = editedData.name.split(" ")
       const lastName = lastNameParts.join(" ")
 
+      console.log("Envoi des données de mise à jour:", { firstName, lastName });
+
       const updatedProfile = await userService.updateProfile({
-        firstName: firstName, // Changé de first_name à firstName
-        lastName: lastName, // Changé de last_name à lastName
+        firstName,
+        lastName,
         profile: {
           phone: editedData.phone,
           address: editedData.location,
@@ -135,10 +137,29 @@ const ProfilePage = () => {
         },
       })
 
-      setUserData({
-        ...editedData,
-        name: `${updatedProfile.firstName} ${updatedProfile.lastName}`, // Changé de first_name/last_name à firstName/lastName
-      })
+      console.log("Profil mis à jour reçu:", updatedProfile);
+
+      // Mettre à jour les données locales avec les données du serveur
+      const userProfileData: UserProfile = {
+        name: `${updatedProfile.firstName} ${updatedProfile.lastName}`.trim(),
+        email: updatedProfile.email,
+        phone: updatedProfile.profile?.phone || "",
+        location: updatedProfile.profile?.address || "",
+        bio: updatedProfile.profile?.bio || "",
+        interests: updatedProfile.interests || updatedProfile.profile?.interests || [],
+        savedUniversities: updatedProfile.saved_universities || [],
+        savedPrograms: updatedProfile.saved_programs || [],
+        educationLevel: updatedProfile.education_level || updatedProfile.profile?.education_level || "",
+        currentUniversity: updatedProfile.university || updatedProfile.profile?.current_university || "",
+        role: updatedProfile.role || "student",
+        academicRecords: updatedProfile.profile?.academic_records || [],
+        testResults: updatedProfile.test_results && updatedProfile.test_results.length > 0 
+          ? updatedProfile.test_results[0] 
+          : null,
+      }
+
+      setUserData(userProfileData)
+      setEditedData(userProfileData)
       setIsEditing(false)
     } catch (err) {
       console.error("Erreur lors de la mise à jour du profil:", err)

@@ -141,6 +141,7 @@ export interface PaginatedResponse<T> {
 export interface ProfileUpdateData {
   firstName?: string
   lastName?: string
+  name?: string
   profile?: {
     phone?: string
     address?: string
@@ -247,35 +248,35 @@ export const authService = {
   },
 
   async register(name: string, email: string, password: string, confirmPassword: string) {
-    try {
-      // Extraire le prénom et le nom
-      const nameParts = name.split(" ")
-      const firstName = nameParts[0]
-      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : ""
-
-      const response = await api.post("/register", {
-        email,
-        password,
-        confirmPassword,
-        username: email.split("@")[0],
-        firstName,
-        lastName,
+    const data = {
+      name,
+      email,
+      password,
+      password_confirmation: confirmPassword
+    };
+    console.log("Données envoyées au serveur:", data);
+    console.log("URL d'inscription:", API_CONFIG.AUTH.REGISTER_ENDPOINT);
+    
+    return api
+      .post(API_CONFIG.AUTH.REGISTER_ENDPOINT, data)
+      .then((response) => {
+        console.log("Réponse du serveur:", response.data);
+        if (response.data.access_token) {
+          localStorage.setItem("token", response.data.access_token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        }
+        return response.data;
       })
-
-      // Sauvegarder le token
-      localStorage.setItem("token", response.data.accessToken)
-
-      // Sauvegarder les informations utilisateur
-      localStorage.setItem("user", JSON.stringify(response.data.user))
-
-      return {
-        token: response.data.accessToken,
-        user: response.data.user,
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'inscription:", error)
-      throw error
-    }
+      .catch((error) => {
+        console.error("Détails complets de l'erreur:", {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          headers: error.response?.headers,
+          config: error.config
+        });
+        throw error;
+      });
   },
 
   logout() {
@@ -574,8 +575,18 @@ export const userService = {
         throw new Error("Utilisateur non connecté")
       }
 
+      // Préparer les données à envoyer
+      const dataToSend = {
+        ...profileData,
+        name: profileData.firstName + (profileData.lastName ? ` ${profileData.lastName}` : '')
+      };
+
+      console.log("Données envoyées pour la mise à jour:", dataToSend);
+
       // L'intercepteur ajoutera automatiquement le token
-      const response = await api.patch(API_CONFIG.AUTH.PROFILE_UPDATE_ENDPOINT, profileData)
+      const response = await api.patch(API_CONFIG.AUTH.PROFILE_UPDATE_ENDPOINT, dataToSend)
+
+      console.log("Réponse de mise à jour:", response.data);
 
       // Mettre à jour l'utilisateur dans le localStorage
       localStorage.setItem("user", JSON.stringify(response.data))

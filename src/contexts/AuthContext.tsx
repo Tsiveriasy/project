@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   clearError: () => void
+  updateProfile: (profileData: any) => Promise<boolean>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -71,8 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true
     } catch (err: any) {
       console.error("Registration error:", err)
-      if (err.response?.data?.message) {
-        setError(err.response.data.message)
+      if (err.response?.data?.errors) {
+        // Formatage des erreurs de validation
+        const errorMessages = Object.entries(err.response.data.errors)
+          .map(([field, messages]) => `${field}: ${messages}`)
+          .join('\n')
+        setError(errorMessages)
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail)
       } else if (err.message) {
         setError(err.message)
       } else {
@@ -110,6 +117,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null)
   }
 
+  const updateProfile = async (profileData: any) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const updatedUser = await userService.updateProfile(profileData);
+      setUser(updatedUser);
+      setLoading(false);
+      return true;
+    } catch (err: any) {
+      console.error("Profile update error:", err);
+      if (err.response?.data?.errors) {
+        const errorMessages = Object.entries(err.response.data.errors)
+          .map(([field, messages]) => `${field}: ${messages}`)
+          .join('\n');
+        setError(errorMessages);
+      } else if (err.response?.data?.detail) {
+        setError(err.response.data.detail);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Une erreur est survenue lors de la mise à jour du profil.");
+      }
+      setLoading(false);
+      return false;
+    }
+  };
+
   // Détermine si l'utilisateur est authentifié
   const isAuthenticated = user !== null
 
@@ -128,6 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         clearError,
+        updateProfile
       }}
     >
       {children}
