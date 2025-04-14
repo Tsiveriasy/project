@@ -31,10 +31,17 @@ const Navbar = () => {
     if (value.length >= 2) {
       setIsSearching(true)
       try {
-        const results = await searchService.globalSearch(value)
+        const queryParams = new URLSearchParams({
+          q: value,
+          type: 'all'
+        }).toString()
+        
+        const results = await searchService.globalSearch(queryParams)
+        console.log("Résultats de recherche:", results)
         setSearchResults(results)
       } catch (error) {
         console.error("Erreur de recherche:", error)
+        setSearchResults(null)
       } finally {
         setIsSearching(false)
       }
@@ -215,7 +222,7 @@ const Navbar = () => {
                                 className="block px-4 py-2 hover:bg-blue-50 transition-colors"
                                 onClick={() => setSearchResults(null)}
                               >
-                                {prog.name} - {prog.university.name}
+                                {prog.name} - {prog.university_name || prog.university?.name || 'Université non spécifiée'}
                               </Link>
                             </li>
                           ))}

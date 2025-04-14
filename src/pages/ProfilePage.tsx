@@ -161,6 +161,7 @@ const ProfilePage = () => {
       setUserData(userProfileData)
       setEditedData(userProfileData)
       setIsEditing(false)
+      setError(null)
     } catch (err) {
       console.error("Erreur lors de la mise à jour du profil:", err)
       setError("Une erreur est survenue lors de la sauvegarde du profil")
@@ -560,4 +561,3 @@ const ProfilePage = () => {
 }
 
 export default ProfilePage
-

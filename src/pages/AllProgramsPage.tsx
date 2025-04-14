@@ -36,73 +36,54 @@ const AllProgramsPage = () => {
     search: "",
     degree_level: "",
     language: "",
-    duration: "",
-    sort: "",
     university: "",
+    sort: ""
   })
 
-
-/*
   useEffect(() => {
     const fetchPrograms = async () => {
       try {
-        setIsLoading(true);
-        const response = await programService.getAll({
+        setIsLoading(true)
+        console.log("Fetching programs with filters:", { currentPage, filters })
+
+        // Construire les paramètres de recherche
+        const searchParams: ProgramSearchParams = {
           page: currentPage,
-          limit: 50 // Augmenter la limite pour récupérer plus de programmes
-        });
+          limit: ITEMS_PER_PAGE,
+          search: filters.search || undefined,
+          level: filters.degree_level || undefined,
+          language: filters.language || undefined,
+          university: filters.university || undefined,
+          ordering: filters.sort || undefined
+        }
+
+        const response = await programService.getAll(searchParams)
+        console.log("API Response:", response)
+
         if (response && response.data) {
-          setPrograms(response.data);
-          setTotalPages(response.total_pages || 1);
+          setPrograms(response.data)
+          setTotalPages(response.total_pages || 1)
+          console.log("Total programs:", response.data.length)
         } else {
-          setPrograms([]);
-          setError("Aucun programme trouvé");
+          setPrograms([])
+          setError("Aucun programme trouvé")
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des programmes:", error);
-        setError("Une erreur est survenue lors du chargement des programmes");
-        setPrograms([]);
+        console.error("Erreur lors de la récupération des programmes:", error)
+        setError("Une erreur est survenue lors du chargement des programmes")
+        setPrograms([])
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-
-    fetchPrograms();
-  }, [currentPage]);
-*/
-
-useEffect(() => {
-  const fetchPrograms = async () => {
-    try {
-      setIsLoading(true);
-      // Augmenter la limite et ajouter des logs
-      console.log("Fetching programs for page:", currentPage);
-      const response = await programService.getAll({
-        page: currentPage,
-        limit: 20 // Augmenté à 20 pour être sûr d'avoir tous les programmes
-      });
-      
-      console.log("API Response:", response);
-      
-      if (response && response.data) {
-        setPrograms(response.data);
-        setTotalPages(response.total_pages || 1);
-        console.log("Total programs:", response.data.length);
-      } else {
-        setPrograms([]);
-        setError("Aucun programme trouvé");
-      }
-    } catch (error) {
-      console.error("Erreur lors de la récupération des programmes:", error);
-      setError("Une erreur est survenue lors du chargement des programmes");
-      setPrograms([]);
-    } finally {
-      setIsLoading(false);
     }
-  };
 
-  fetchPrograms();
-}, [currentPage]);
+    // Ajouter un délai pour la recherche
+    const timeoutId = setTimeout(() => {
+      fetchPrograms()
+    }, 300) // 300ms de délai
+
+    return () => clearTimeout(timeoutId)
+  }, [currentPage, filters])
 
   if (isLoading) {
     return <div>Chargement...</div>;
@@ -110,6 +91,16 @@ useEffect(() => {
 
   if (error) {
     return <div className="text-red-600">{error}</div>;
+  }
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage)
+    window.scrollTo(0, 0)
+  }
+
+  const handleFilterChange = (name: string, value: string) => {
+    setFilters(prev => ({ ...prev, [name]: value }))
+    setCurrentPage(1) // Réinitialiser à la première page lors du changement de filtres
   }
 
   return (
@@ -129,7 +120,7 @@ useEffect(() => {
                   placeholder="Rechercher une formation..."
                   className="pl-10 w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.search}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
                 />
               </div>
 
@@ -138,7 +129,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.university}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, university: e.target.value }))}
+                  onChange={(e) => handleFilterChange('university', e.target.value)}
                 >
                   <option value="">Toutes les universités</option>
                   <option value="ua">Université d'Antananarivo</option>
@@ -154,7 +145,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.degree_level}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, degree_level: e.target.value }))}
+                  onChange={(e) => handleFilterChange('degree_level', e.target.value)}
                 >
                   <option value="">Niveau d'études</option>
                   <option value="licence">Licence (Bac+3)</option>
@@ -172,7 +163,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.language}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, language: e.target.value }))}
+                  onChange={(e) => handleFilterChange('language', e.target.value)}
                 >
                   <option value="">Langue d'enseignement</option>
                   <option value="fr">Français</option>
@@ -186,7 +177,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.sort}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value }))}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
                 >
                   <option value="">Trier par</option>
                   <option value="name">Nom (A-Z)</option>
@@ -250,7 +241,7 @@ useEffect(() => {
           {/* Pagination */}
           <div className="mt-8 flex justify-center items-center space-x-4">
             <button
-              onClick={() => setCurrentPage(currentPage - 1)}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className={`flex items-center px-3 py-2 rounded-md ${
                 currentPage === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
@@ -264,7 +255,7 @@ useEffect(() => {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
-                  onClick={() => setCurrentPage(page)}
+                  onClick={() => handlePageChange(page)}
                   className={`px-4 py-2 rounded-md ${
                     currentPage === page ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-blue-50"
                   }`}
@@ -275,7 +266,7 @@ useEffect(() => {
             </div>
 
             <button
-              onClick={() => setCurrentPage(currentPage + 1)}
+              onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className={`flex items-center px-3 py-2 rounded-md ${
                 currentPage === totalPages ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
