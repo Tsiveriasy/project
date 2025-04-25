@@ -37,6 +37,7 @@ const Navbar = () => {
         setSearchResults(results)
       } catch (error) {
         console.error("Erreur de recherche:", error)
+        setSearchResults(null)
       } finally {
         setIsSearching(false)
       }
@@ -217,7 +218,7 @@ const Navbar = () => {
                                 className="block px-4 py-2 hover:bg-blue-50 transition-colors"
                                 onClick={() => setSearchResults(null)}
                               >
-                                {prog.name} - {prog.university.name}
+                                {prog.name} - {prog.university_name || prog.university?.name || 'Université non spécifiée'}
                               </Link>
                             </li>
                           ))}
@@ -239,7 +240,7 @@ const Navbar = () => {
                   className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors"
                 >
                   <User className="h-5 w-5" />
-                  <span>{user?.name || 'Profil'}</span>
+                  <span>{user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Profil'}</span>
                   <ChevronDown className={`h-4 w-4 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {isProfileMenuOpen && (

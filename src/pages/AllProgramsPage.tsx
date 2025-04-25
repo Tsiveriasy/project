@@ -38,9 +38,8 @@ const AllProgramsPage = () => {
     search: "",
     degree_level: "",
     language: "",
-    duration: "",
-    sort: "",
     university: "",
+    sort: ""
   })
 
   useEffect(() => {
@@ -194,6 +193,7 @@ const AllProgramsPage = () => {
                   className="pl-10 w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
                 />
               </div>
 
@@ -202,6 +202,7 @@ const AllProgramsPage = () => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.university}
+                  onChange={(e) => handleFilterChange('university', e.target.value)}
                   onChange={(e) => handleFilterChange('university', e.target.value)}
                 >
                   <option value="">Toutes les universités</option>
@@ -219,6 +220,7 @@ const AllProgramsPage = () => {
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.degree_level}
                   onChange={(e) => handleFilterChange('degree_level', e.target.value)}
+                  onChange={(e) => handleFilterChange('degree_level', e.target.value)}
                 >
                   <option value="">Niveau d'études</option>
                   {Object.entries(DEGREE_LEVEL_LABELS).map(([value, label]) => (
@@ -235,6 +237,7 @@ const AllProgramsPage = () => {
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.language}
                   onChange={(e) => handleFilterChange('language', e.target.value)}
+                  onChange={(e) => handleFilterChange('language', e.target.value)}
                 >
                   <option value="">Langue d'enseignement</option>
                   <option value="fr">Français</option>
@@ -248,6 +251,7 @@ const AllProgramsPage = () => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.sort}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
                   onChange={(e) => handleFilterChange('sort', e.target.value)}
                 >
                   <option value="">Trier par</option>
