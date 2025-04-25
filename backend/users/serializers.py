@@ -13,17 +13,37 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     profile = ProfileSerializer()
-    firstName = serializers.CharField(source='name')
-    lastName = serializers.CharField(source='name', required=False)
+    firstName = serializers.CharField(write_only=True, required=False)
+    lastName = serializers.CharField(write_only=True, required=False)
+    name = serializers.CharField(read_only=True)
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'firstName', 'lastName', 'is_admin', 'date_joined', 'profile']
+        fields = ['id', 'email', 'firstName', 'lastName', 'name', 'is_admin', 'date_joined', 'profile']
         read_only_fields = ['is_admin']
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Séparer le nom complet en prénom et nom
+        name_parts = instance.name.split(' ', 1) if instance.name else ['', '']
+        ret['firstName'] = name_parts[0]
+        ret['lastName'] = name_parts[1] if len(name_parts) > 1 else ''
+        return ret
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
         
+        # Récupérer firstName et lastName des données validées
+        first_name = validated_data.pop('firstName', None)
+        last_name = validated_data.pop('lastName', None)
+        
+        # Si l'un des deux est fourni, mettre à jour le nom complet
+        if first_name is not None or last_name is not None:
+            current_name_parts = instance.name.split(' ', 1) if instance.name else ['', '']
+            new_first_name = first_name if first_name is not None else current_name_parts[0]
+            new_last_name = last_name if last_name is not None else (current_name_parts[1] if len(current_name_parts) > 1 else '')
+            instance.name = f"{new_first_name} {new_last_name}".strip()
+            
         # Update user fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
