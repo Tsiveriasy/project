@@ -13,14 +13,19 @@ export const API_CONFIG = {
     LOGIN_ENDPOINT: "/api/auth/login/",
     REGISTER_ENDPOINT: "/api/auth/register/",
     PROFILE_ENDPOINT: "/api/auth/profile/",
-    PROFILE_UPDATE_ENDPOINT: "/api/auth/profile/update/"
+    PROFILE_UPDATE_ENDPOINT: "/api/auth/profile/update/"  // Added trailing slash
+  },
+  USERS: {
+    BASE: "/api/users/",
+    ME: "/api/auth/profile/",  // Updated to match Django's auth profile endpoint
+    SAVED_ITEMS: "/api/users/saved-items/"
   },
   UNIVERSITIES: {
     BASE: "/api/universities/",
-    FEATURED: "/api/universities/",  // Changed to use base endpoint since featured doesn't exist
+    FEATURED: "/api/universities/",
     PROGRAMS: "/api/programs/"
   },
   SEARCH: {
-    GLOBAL: "/api/search/"
+    GLOBAL: "/api/universities/search/global/"
   }
 };

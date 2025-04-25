@@ -1,43 +1,40 @@
-"use client"
-
-import type React from "react"
+import React from "react"
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { universityService, type University } from "../services/api-services"
 import UniversityCard from "../components/UniversityCard"
 
-const UniversityListPage: React.FC = () => {
+const UniversityListPage = () => {
   const [universities, setUniversities] = useState<University[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [filterType, setFilterType] = useState<string>("")
   const [sortBy, setSortBy] = useState<string>("name")
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [totalPages, setTotalPages] = useState<number>(1)
+  const [totalItems, setTotalItems] = useState<number>(0)
+  const itemsPerPage = 10 
 
   useEffect(() => {
     fetchUniversities()
-  }, [searchTerm, filterType, sortBy])
+  }, [searchTerm, filterType, sortBy, currentPage])
 
-  // Modifier la fonction fetchUniversities pour mieux gérer les données de l'API Django
   const fetchUniversities = async () => {
     setLoading(true)
     setError(null)
     try {
-      // Construire les paramètres de requête
-      const params: Record<string, string> = {}
-      if (searchTerm) params.search = searchTerm
-      if (filterType) params.type = filterType
-
-      // Ajouter le paramètre de tri
-      if (sortBy === "rating") {
-        params.ordering = "-rating"
-      } else if (sortBy === "name") {
-        params.ordering = "name"
-      }
-
-      const data = await universityService.getAll(params)
-      console.log("Universités récupérées:", data)
-      setUniversities(Array.isArray(data) ? data : [])
+      const response = await universityService.getAll({
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchTerm || undefined,
+        type: filterType || undefined,
+        ordering: sortBy || undefined
+      })
+      
+      setUniversities(response.data)
+      setTotalPages(response.total_pages)
+      setTotalItems(response.total)
     } catch (err: any) {
       console.error("Erreur lors de la récupération des universités:", err)
       setError("Impossible de charger les universités. Veuillez réessayer plus tard.")
@@ -48,14 +45,111 @@ const UniversityListPage: React.FC = () => {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value)
+    setCurrentPage(1)
   }
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFilterType(e.target.value)
+    setCurrentPage(1)
   }
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSortBy(e.target.value)
+    setCurrentPage(1)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo(0, 0)
+  }
+
+  const renderPaginationButtons = () => {
+    const buttons = []
+    const maxVisiblePages = 5
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+    }
+
+    buttons.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Précédent
+      </button>
+    )
+
+    if (startPage > 1) {
+      buttons.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+        >
+          1
+        </button>
+      )
+      if (startPage > 2) {
+        buttons.push(
+          <span key="dots1" className="px-2">
+            ...
+          </span>
+        )
+      }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 rounded border ${
+            currentPage === i
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'border-gray-300 hover:bg-gray-50'
+          }`}
+        >
+          {i}
+        </button>
+      )
+    }
+
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        buttons.push(
+          <span key="dots2" className="px-2">
+            ...
+          </span>
+        )
+      }
+      buttons.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+        >
+          {totalPages}
+        </button>
+      )
+    }
+
+    buttons.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Suivant
+      </button>
+    )
+
+    return buttons
   }
 
   return (
@@ -123,15 +217,27 @@ const UniversityListPage: React.FC = () => {
       ) : (
         <>
           <p className="mb-4 text-gray-600">
-            {universities.length} {universities.length > 1 ? "universités trouvées" : "université trouvée"}
+            {totalItems} {totalItems > 1 ? "universités trouvées" : "université trouvée"}
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {universities.map((university) => (
               <Link to={`/universities/${university.id}`} key={university.id}>
                 <UniversityCard university={university} />
               </Link>
             ))}
           </div>
+
+          {totalPages > 1 && (
+            <div className="mt-8">
+              <div className="flex justify-center items-center space-x-2">
+                {renderPaginationButtons()}
+              </div>
+              <div className="mt-4 text-center text-sm text-gray-600">
+                Page {currentPage} sur {totalPages}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -139,4 +245,3 @@ const UniversityListPage: React.FC = () => {
 }
 
 export default UniversityListPage
-

@@ -1,41 +1,66 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
 from .models import Profile
-import traceback
 
 User = get_user_model()
 
+class CourseSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    grade = serializers.CharField()
+    credits = serializers.IntegerField()
+
+class AcademicRecordSerializer(serializers.Serializer):
+    year = serializers.CharField()
+    semester = serializers.CharField()
+    gpa = serializers.FloatField()
+    courses = CourseSerializer(many=True)
+
+class UserBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+
 class ProfileSerializer(serializers.ModelSerializer):
+    user = UserBasicSerializer(read_only=True)
+    academic_records = AcademicRecordSerializer(many=True, required=False)
+    
     class Meta:
         model = Profile
-        fields = ['avatar', 'phone', 'location', 'education', 'interests', 'last_login', 'bio', 'address', 'education_level', 'current_university', 'academic_records']
+        fields = ('id', 'user', 'phone', 'address', 'bio', 'interests', 
+                 'education_level', 'current_university', 'academic_records', 'transcript_files')
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if not ret.get('academic_records'):
+            ret['academic_records'] = []
+        if not ret.get('transcript_files'):
+            ret['transcript_files'] = []
+        return ret
 
 class UserSerializer(serializers.ModelSerializer):
-    profile = ProfileSerializer()
-    firstName = serializers.CharField(write_only=True, required=False)
-    lastName = serializers.CharField(write_only=True, required=False)
-    name = serializers.CharField(read_only=True)
+    profile = ProfileSerializer(read_only=True)
+    saved_programs = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    saved_universities = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'firstName', 'lastName', 'name', 'is_admin', 'date_joined', 'profile']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_admin', 'date_joined', 'profile', 'saved_universities', 'saved_programs']
         read_only_fields = ['is_admin']
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         # Séparer le nom complet en prénom et nom
         name_parts = instance.name.split(' ', 1) if instance.name else ['', '']
-        ret['firstName'] = name_parts[0]
-        ret['lastName'] = name_parts[1] if len(name_parts) > 1 else ''
+        ret['first_name'] = name_parts[0]
+        ret['last_name'] = name_parts[1] if len(name_parts) > 1 else ''
         return ret
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop('profile', {})
         
-        # Récupérer firstName et lastName des données validées
-        first_name = validated_data.pop('firstName', None)
-        last_name = validated_data.pop('lastName', None)
+        # Récupérer first_name et last_name des données validées
+        first_name = validated_data.pop('first_name', None)
+        last_name = validated_data.pop('last_name', None)
         
         # Si l'un des deux est fourni, mettre à jour le nom complet
         if first_name is not None or last_name is not None:

@@ -1,302 +1,187 @@
-"use client"
-
-import { useState } from "react"
-import { Search, Filter, ChevronDown } from "lucide-react"
+import React from "react"
+import { useState, useEffect } from "react"
+import { Link } from "react-router-dom"
+import { programService, type Program } from "../services/api-services"
 import ProgramCard from "../components/ProgramCard"
 
 const ProgramsPage = () => {
-  const [activeFilter, setActiveFilter] = useState<string | null>(null)
+  const [programs, setPrograms] = useState<Program[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState<string>("")
+  const [filterType, setFilterType] = useState<string>("")
+  const [sortBy, setSortBy] = useState<string>("name")
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [totalPages, setTotalPages] = useState<number>(1)
+  const [totalItems, setTotalItems] = useState<number>(0)
+  const itemsPerPage = 50
 
-  // Sample data for programs
-  const programs = [
-    {
-      id: 1,
-      title: "Master en Droit des Affaires",
-      university: "Université Paris-Sorbonne",
-      duration: "2 ans",
-      level: "Master",
-      field: "Droit",
-      studentCount: 120,
-      image:
-        "https://images.unsplash.com/photo-1589391886645-d51941baf7fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 2,
-      title: "Diplôme d'Ingénieur en Informatique",
-      university: "École Polytechnique",
-      duration: "3 ans",
-      level: "Bac+5",
-      field: "Informatique",
-      studentCount: 85,
-      image:
-        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 3,
-      title: "MBA Management International",
-      university: "HEC Paris",
-      duration: "16 mois",
-      level: "Master",
-      field: "Commerce",
-      studentCount: 65,
-      image:
-        "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 4,
-      title: "Licence en Sciences Politiques",
-      university: "Sciences Po Paris",
-      duration: "3 ans",
-      level: "Licence",
-      field: "Sciences Politiques",
-      studentCount: 150,
-      image:
-        "https://images.unsplash.com/photo-1523995462485-3d171b5c8fa9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-    {
-      id: 5,
-      title: "Master en Biologie Moléculaire",
-      university: "Université de Lyon",
-      duration: "2 ans",
-      level: "Master",
-      field: "Sciences",
-      studentCount: 45,
-      image:
-        "https://images.unsplash.com/photo-1576086213369-97a306d36557?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    },
-  ]
+  useEffect(() => {
+    fetchPrograms()
+  }, [searchTerm, filterType, sortBy, currentPage])
 
-  const toggleFilter = (filter: string) => {
-    if (activeFilter === filter) {
-      setActiveFilter(null)
-    } else {
-      setActiveFilter(filter)
+  const fetchPrograms = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await programService.getAll({
+        page: currentPage,
+        limit: itemsPerPage,
+        q: searchTerm || undefined,
+        level: filterType || undefined,
+        ordering: sortBy || undefined
+      })
+      
+      if (response && 'data' in response) {
+        setPrograms(response.data)
+        setTotalPages(response.total_pages)
+        setTotalItems(response.total)
+      } else {
+        setPrograms([])
+        setTotalPages(1)
+        setTotalItems(0)
+      }
+    } catch (err: any) {
+      console.error("Erreur lors de la récupération des formations:", err)
+      setError("Impossible de charger les formations. Veuillez réessayer plus tard.")
+    } finally {
+      setLoading(false)
     }
   }
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+    setCurrentPage(1) // Reset to first page on search
+  }
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilterType(e.target.value)
+    setCurrentPage(1) // Reset to first page on filter change
+  }
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value)
+    setCurrentPage(1) // Reset to first page on sort change
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
   return (
-    <div className="bg-gray-50 min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Formations</h1>
-          <p className="text-xl text-gray-600">
-            Explorez notre catalogue de formations pour trouver celle qui correspond à vos ambitions
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">Découvrez les formations</h1>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-md p-4 mb-8">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow">
-              <input
-                type="text"
-                placeholder="Rechercher une formation..."
-                className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <div className="relative">
-                <button
-                  className={`flex items-center px-4 py-2 border rounded-md ${
-                    activeFilter === "level" ? "bg-blue-50 border-blue-500" : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => toggleFilter("level")}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  <span>Niveau</span>
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </button>
-                {activeFilter === "level" && (
-                  <div className="absolute z-10 mt-2 w-56 bg-white border rounded-md shadow-lg">
-                    <div className="p-2">
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Licence (Bac+3)</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Master (Bac+5)</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Doctorat (Bac+8)</span>
-                        </label>
-                      </div>
-                      <div>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Formation professionnelle</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  className={`flex items-center px-4 py-2 border rounded-md ${
-                    activeFilter === "field" ? "bg-blue-50 border-blue-500" : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => toggleFilter("field")}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  <span>Domaine</span>
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </button>
-                {activeFilter === "field" && (
-                  <div className="absolute z-10 mt-2 w-56 bg-white border rounded-md shadow-lg">
-                    <div className="p-2">
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Sciences</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Ingénierie</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Commerce</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Droit</span>
-                        </label>
-                      </div>
-                      <div>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Médecine</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  className={`flex items-center px-4 py-2 border rounded-md ${
-                    activeFilter === "duration" ? "bg-blue-50 border-blue-500" : "hover:bg-gray-50"
-                  }`}
-                  onClick={() => toggleFilter("duration")}
-                >
-                  <Filter className="h-4 w-4 mr-2" />
-                  <span>Durée</span>
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </button>
-                {activeFilter === "duration" && (
-                  <div className="absolute z-10 mt-2 w-56 bg-white border rounded-md shadow-lg">
-                    <div className="p-2">
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>1 an</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>2 ans</span>
-                        </label>
-                      </div>
-                      <div className="mb-2">
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>3 ans</span>
-                        </label>
-                      </div>
-                      <div>
-                        <label className="flex items-center">
-                          <input type="checkbox" className="mr-2" />
-                          <span>Plus de 3 ans</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Results */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-gray-600">{programs.length} résultats trouvés</p>
-            <div className="flex items-center">
-              <span className="mr-2 text-gray-600">Trier par:</span>
-              <select className="border rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option>Popularité</option>
-                <option>Durée</option>
-                <option>Nom (A-Z)</option>
-                <option>Nom (Z-A)</option>
-              </select>
-            </div>
+      <div className="mb-8 bg-white p-6 rounded-lg shadow-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
+              Rechercher
+            </label>
+            <input
+              type="text"
+              id="search"
+              placeholder="Nom de la formation..."
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
           </div>
 
-          <div className="space-y-6">
-            {programs.map((program) => (
-              <ProgramCard
-                key={program.id}
-                id={program.id}
-                name={program.title}
-                university_name={program.university}
-                level={program.level}
-                duration={program.duration}
-                language="Français" // Valeur par défaut si non disponible
-                tuition_fee="Contactez l'établissement" // Valeur par défaut si non disponible
-                description={`Formation en ${program.field} proposée par ${program.university}`} // Description générée
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-center">
-          <nav className="inline-flex rounded-md shadow">
-            <a
-              href="#"
-              className="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+          <div>
+            <label htmlFor="filter" className="block text-sm font-medium text-gray-700 mb-1">
+              Type de formation
+            </label>
+            <select
+              id="filter"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              value={filterType}
+              onChange={handleFilterChange}
             >
-              Précédent
-            </a>
-            <a href="#" className="px-3 py-2 border-t border-b border-gray-300 bg-blue-50 text-blue-600 font-medium">
-              1
-            </a>
-            <a href="#" className="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
-              2
-            </a>
-            <a href="#" className="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
-              3
-            </a>
-            <a
-              href="#"
-              className="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50"
+              <option value="">Tous les types</option>
+              <option value="bachelor">Bachelor</option>
+              <option value="master">Master</option>
+              <option value="phd">Doctorat</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="sort" className="block text-sm font-medium text-gray-700 mb-1">
+              Trier par
+            </label>
+            <select
+              id="sort"
+              className="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              value={sortBy}
+              onChange={handleSortChange}
             >
-              Suivant
-            </a>
-          </nav>
+              <option value="name">Nom</option>
+              <option value="duration">Durée</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Erreur!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      ) : (
+        <>
+          <p className="mb-4 text-gray-600">
+            {totalItems} {totalItems > 1 ? "formations trouvées" : "formation trouvée"}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {programs.map((program) => (
+              <Link to={`/programs/${program.id}`} key={program.id}>
+                <ProgramCard program={program} />
+              </Link>
+            ))}
+          </div>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center">
+              <nav className="flex items-center gap-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50"
+                >
+                  Précédent
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page)}
+                    className={`px-3 py-1 rounded border ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50"
+                >
+                  Suivant
+                </button>
+              </nav>
+            </div>
+          )}
+        </>
+      )}
     </div>
   )
 }
 
 export default ProgramsPage
-

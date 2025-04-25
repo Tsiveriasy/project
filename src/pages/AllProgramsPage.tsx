@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { GraduationCap, Clock, Globe, Search, Building, Euro, ChevronLeft, ChevronRight } from "lucide-react"
+import { GraduationCap, Clock, Globe, Search, Building, Euro } from "lucide-react"
 import { programService, type Program } from "../services/api-services"
 
 const DEGREE_LEVEL_LABELS: Record<string, string> = {
@@ -15,7 +15,7 @@ const DEGREE_LEVEL_LABELS: Record<string, string> = {
   other: "Autre",
 }
 
-const ITEMS_PER_PAGE = 9
+const ITEMS_PER_PAGE = 10
 
 interface ProgramSearchParams {
   page: number
@@ -29,9 +29,11 @@ interface ProgramSearchParams {
 
 const AllProgramsPage = () => {
   const [programs, setPrograms] = useState<Program[]>([])
-  const [isLoading, setIsLoading] = useState(true);  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
   const [filters, setFilters] = useState({
     search: "",
     degree_level: "",
@@ -41,75 +43,137 @@ const AllProgramsPage = () => {
     university: "",
   })
 
-
-/*
   useEffect(() => {
-    const fetchPrograms = async () => {
-      try {
-        setIsLoading(true);
-        const response = await programService.getAll({
-          page: currentPage,
-          limit: 50 // Augmenter la limite pour récupérer plus de programmes
-        });
-        if (response && response.data) {
-          setPrograms(response.data);
-          setTotalPages(response.total_pages || 1);
-        } else {
-          setPrograms([]);
-          setError("Aucun programme trouvé");
-        }
-      } catch (error) {
-        console.error("Erreur lors de la récupération des programmes:", error);
-        setError("Une erreur est survenue lors du chargement des programmes");
-        setPrograms([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    fetchPrograms()
+  }, [currentPage, filters])
 
-    fetchPrograms();
-  }, [currentPage]);
-*/
-
-useEffect(() => {
   const fetchPrograms = async () => {
     try {
-      setIsLoading(true);
-      // Augmenter la limite et ajouter des logs
-      console.log("Fetching programs for page:", currentPage);
+      setIsLoading(true)
       const response = await programService.getAll({
         page: currentPage,
-        limit: 20 // Augmenté à 20 pour être sûr d'avoir tous les programmes
-      });
+        limit: ITEMS_PER_PAGE,
+        search: filters.search || undefined,
+        level: filters.degree_level || undefined,
+        university: filters.university || undefined,
+        language: filters.language || undefined,
+        ordering: filters.sort || undefined
+      })
       
-      console.log("API Response:", response);
-      
-      if (response && response.data) {
-        setPrograms(response.data);
-        setTotalPages(response.total_pages || 1);
-        console.log("Total programs:", response.data.length);
-      } else {
-        setPrograms([]);
-        setError("Aucun programme trouvé");
-      }
+      setPrograms(response.data)
+      setTotalPages(response.total_pages)
+      setTotalItems(response.total)
     } catch (error) {
-      console.error("Erreur lors de la récupération des programmes:", error);
-      setError("Une erreur est survenue lors du chargement des programmes");
-      setPrograms([]);
+      console.error("Erreur lors de la récupération des programmes:", error)
+      setError("Une erreur est survenue lors du chargement des programmes")
+      setPrograms([])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
-
-  fetchPrograms();
-}, [currentPage]);
-
-  if (isLoading) {
-    return <div>Chargement...</div>;
   }
 
-  if (error) {
-    return <div className="text-red-600">{error}</div>;
+  const handleFilterChange = (key: string, value: string) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+    setCurrentPage(1)
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo(0, 0)
+  }
+
+  const renderPaginationButtons = () => {
+    const buttons = []
+    const maxVisiblePages = 5
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1)
+    }
+
+    // Bouton "Précédent"
+    buttons.push(
+      <button
+        key="prev"
+        onClick={() => handlePageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Précédent
+      </button>
+    )
+
+    // Première page
+    if (startPage > 1) {
+      buttons.push(
+        <button
+          key={1}
+          onClick={() => handlePageChange(1)}
+          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+        >
+          1
+        </button>
+      )
+      if (startPage > 2) {
+        buttons.push(
+          <span key="dots1" className="px-2">
+            ...
+          </span>
+        )
+      }
+    }
+
+    // Pages du milieu
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 rounded border ${
+            currentPage === i
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'border-gray-300 hover:bg-gray-50'
+          }`}
+        >
+          {i}
+        </button>
+      )
+    }
+
+    // Dernière page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        buttons.push(
+          <span key="dots2" className="px-2">
+            ...
+          </span>
+        )
+      }
+      buttons.push(
+        <button
+          key={totalPages}
+          onClick={() => handlePageChange(totalPages)}
+          className="px-3 py-1 rounded border border-gray-300 hover:bg-gray-50"
+        >
+          {totalPages}
+        </button>
+      )
+    }
+
+    // Bouton "Suivant"
+    buttons.push(
+      <button
+        key="next"
+        onClick={() => handlePageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="px-3 py-1 rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50"
+      >
+        Suivant
+      </button>
+    )
+
+    return buttons
   }
 
   return (
@@ -129,7 +193,7 @@ useEffect(() => {
                   placeholder="Rechercher une formation..."
                   className="pl-10 w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.search}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) => handleFilterChange('search', e.target.value)}
                 />
               </div>
 
@@ -138,7 +202,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.university}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, university: e.target.value }))}
+                  onChange={(e) => handleFilterChange('university', e.target.value)}
                 >
                   <option value="">Toutes les universités</option>
                   <option value="ua">Université d'Antananarivo</option>
@@ -154,16 +218,14 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.degree_level}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, degree_level: e.target.value }))}
+                  onChange={(e) => handleFilterChange('degree_level', e.target.value)}
                 >
                   <option value="">Niveau d'études</option>
-                  <option value="licence">Licence (Bac+3)</option>
-                  <option value="master">Master (Bac+5)</option>
-                  <option value="doctorat">Doctorat (Bac+8)</option>
-                  <option value="bts">BTS</option>
-                  <option value="dut">DUT</option>
-                  <option value="ingenieur">Diplôme d'Ingénieur</option>
-                  <option value="other">Autre</option>
+                  {Object.entries(DEGREE_LEVEL_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -172,7 +234,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.language}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, language: e.target.value }))}
+                  onChange={(e) => handleFilterChange('language', e.target.value)}
                 >
                   <option value="">Langue d'enseignement</option>
                   <option value="fr">Français</option>
@@ -186,7 +248,7 @@ useEffect(() => {
                 <select
                   className="w-full rounded-md border border-gray-300 py-2 px-3"
                   value={filters.sort}
-                  onChange={(e) => setFilters((prev) => ({ ...prev, sort: e.target.value }))}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
                 >
                   <option value="">Trier par</option>
                   <option value="name">Nom (A-Z)</option>
@@ -200,91 +262,72 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* Liste des formations */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.isArray(programs) && programs.map((program) => (
-              <Link
-                key={program.id}
-                to={`/programs/${program.id}`}
-                className="block bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="p-6">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">{program.name}</h3>
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <Building className="h-4 w-4 mr-2" />
-                    <span>{program.university_name}</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="flex items-center text-gray-600">
-                      <GraduationCap className="h-4 w-4 mr-2" />
-                      <span>{DEGREE_LEVEL_LABELS[program.degree_level]}</span>
-                    </div>
-
-                    <div className="flex items-center text-gray-600">
-                      <Clock className="h-4 w-4 mr-2" />
-                      <span>{program.duration}</span>
-                    </div>
-
-                    <div className="flex items-center text-gray-600">
-                      <Globe className="h-4 w-4 mr-2" />
-                      <span>{program.language}</span>
-                    </div>
-
-                    <div className="flex items-center text-gray-600">
-                      <Euro className="h-4 w-4 mr-2" />
-                      <span>
-                        {program.tuition_fee
-                          ? program.tuition_fee.toLocaleString() + " Ar/an"
-                          : "Contactez l'établissement"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-gray-600 line-clamp-2">{program.description}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="mt-8 flex justify-center items-center space-x-4">
-            <button
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-              className={`flex items-center px-3 py-2 rounded-md ${
-                currentPage === 1 ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              <ChevronLeft className="h-5 w-5 mr-1" />
-              Précédent
-            </button>
-
-            <div className="flex items-center space-x-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-4 py-2 rounded-md ${
-                    currentPage === page ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-blue-50"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
             </div>
+          ) : error ? (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+              <strong className="font-bold">Erreur!</strong>
+              <span className="block sm:inline"> {error}</span>
+            </div>
+          ) : (
+            <>
+              <p className="mb-4 text-gray-600">
+                {totalItems} {totalItems > 1 ? "formations trouvées" : "formation trouvée"}
+              </p>
 
-            <button
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-              className={`flex items-center px-3 py-2 rounded-md ${
-                currentPage === totalPages ? "text-gray-400 cursor-not-allowed" : "text-blue-600 hover:bg-blue-50"
-              }`}
-            >
-              Suivant
-              <ChevronRight className="h-5 w-5 ml-1" />
-            </button>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                {programs.map((program) => (
+                  <Link
+                    key={program.id}
+                    to={`/programs/${program.id}`}
+                    className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                  >
+                    <div className="p-6">
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">{program.name}</h2>
+                      <p className="text-gray-600 mb-4">{program.university_name}</p>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-center text-gray-600">
+                          <GraduationCap className="h-5 w-5 mr-2" />
+                          <span>{DEGREE_LEVEL_LABELS[program.degree_level] || program.degree_level}</span>
+                        </div>
+                        
+                        <div className="flex items-center text-gray-600">
+                          <Clock className="h-5 w-5 mr-2" />
+                          <span>{program.duration}</span>
+                        </div>
+                        
+                        <div className="flex items-center text-gray-600">
+                          <Globe className="h-5 w-5 mr-2" />
+                          <span>{program.language}</span>
+                        </div>
+
+                        {program.tuition_fees && (
+                          <div className="flex items-center text-gray-600">
+                            <Euro className="h-5 w-5 mr-2" />
+                            <span>{program.tuition_fees.toLocaleString()} Ar/an</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="mt-8">
+                  <div className="flex justify-center items-center space-x-2">
+                    {renderPaginationButtons()}
+                  </div>
+                  <div className="mt-4 text-center text-sm text-gray-600">
+                    Page {currentPage} sur {totalPages}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

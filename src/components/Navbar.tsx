@@ -31,7 +31,9 @@ const Navbar = () => {
     if (value.length >= 2) {
       setIsSearching(true)
       try {
-        const results = await searchService.globalSearch(value)
+        const searchParams = new URLSearchParams()
+        searchParams.append("q", value)
+        const results = await searchService.globalSearch(searchParams.toString())
         setSearchResults(results)
       } catch (error) {
         console.error("Erreur de recherche:", error)

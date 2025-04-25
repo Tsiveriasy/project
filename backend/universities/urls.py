@@ -5,6 +5,7 @@ from .views import (
     UniversityCreateView,
     UniversityUpdateView,
     UniversityDeleteView,
+    GlobalSearchView,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('create/', UniversityCreateView.as_view(), name='university-create'),
     path('<int:pk>/update/', UniversityUpdateView.as_view(), name='university-update'),
     path('<int:pk>/delete/', UniversityDeleteView.as_view(), name='university-delete'),
+    path('search/global/', GlobalSearchView.as_view(), name='global-search'),
 ]

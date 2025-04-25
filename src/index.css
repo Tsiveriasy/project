@@ -116,3 +116,32 @@
     border-radius: 0.375rem;
     margin-bottom: 1.5rem;
   }
+  
+  /* Styles pour le carrousel d'universités */
+  .university-carousel {
+    padding: 20px 40px !important;
+  }
+  
+  .university-carousel .swiper-button-next,
+  .university-carousel .swiper-button-prev {
+    color: #2563eb;
+    background: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .university-carousel .swiper-button-next:after,
+  .university-carousel .swiper-button-prev:after {
+    font-size: 20px;
+  }
+  
+  .university-carousel .swiper-button-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .university-carousel .swiper-slide {
+    height: auto;
+  }

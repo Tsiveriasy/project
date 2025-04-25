@@ -13,8 +13,9 @@ import {
   TrendingUp,
   Users,
   CheckCircle2,
+  Heart,
 } from "lucide-react"
-import { programService, type Program } from "../services/api-services"
+import { programService, userService, type Program } from "../services/api-services"
 
 const DEGREE_LEVEL_LABELS: Record<string, string> = {
   licence: "Licence (Bac+3)",
@@ -31,6 +32,7 @@ const ProgramDetailPage = () => {
   const [program, setProgram] = useState<Program | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
     const fetchProgram = async () => {
@@ -42,6 +44,15 @@ const ProgramDetailPage = () => {
       try {
         const data = await programService.getById(Number.parseInt(id))
         setProgram(data)
+        
+        // Vérifier si le programme est dans les favoris
+        try {
+          const savedItems = await userService.getSavedItems()
+          setIsSaved(savedItems.savedPrograms.includes(Number.parseInt(id)))
+        } catch (err) {
+          console.error("Erreur lors de la vérification des favoris:", err)
+          // Ne pas afficher d'erreur à l'utilisateur car ce n'est pas critique
+        }
       } catch (err) {
         console.error("Erreur lors de la récupération du programme:", err)
         setError("Impossible de charger les détails du programme. Veuillez réessayer plus tard.")
@@ -52,6 +63,26 @@ const ProgramDetailPage = () => {
 
     fetchProgram()
   }, [id])
+
+  const handleSaveProgram = async () => {
+    if (!program) return
+    
+    try {
+      if (isSaved) {
+        await userService.removeSavedProgram(program.id)
+        setIsSaved(false)
+      } else {
+        await userService.saveProgram(program.id)
+        setIsSaved(true)
+      }
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde du programme:", err)
+      // Afficher un message d'erreur à l'utilisateur
+      setError("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.")
+      // Réinitialiser l'état après 3 secondes
+      setTimeout(() => setError(null), 3000)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -79,10 +110,25 @@ const ProgramDetailPage = () => {
         {/* En-tête */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
           <div className="bg-blue-600 px-6 py-4">
-            <h1 className="text-2xl font-bold text-white">{program.name}</h1>
-            <div className="flex items-center text-blue-100 mt-2">
-              <Building className="h-5 w-5 mr-2" />
-              <span>{program.university_name}</span>
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-2xl font-bold text-white">{program.name}</h1>
+                <div className="flex items-center text-blue-100 mt-2">
+                  <Building className="h-5 w-5 mr-2" />
+                  <span>{program.university_name}</span>
+                </div>
+              </div>
+              <button
+                onClick={handleSaveProgram}
+                className={`p-2 rounded-full ${
+                  isSaved ? "bg-red-100 text-red-600" : "bg-white/20 text-white"
+                } hover:bg-opacity-90 transition-colors focus:outline-none`}
+                aria-label={isSaved ? "Retirer des favoris" : "Ajouter aux favoris"}
+              >
+                <Heart
+                  className={`h-6 w-6 ${isSaved ? "fill-red-600" : ""}`}
+                />
+              </button>
             </div>
           </div>
 
@@ -191,10 +237,15 @@ const ProgramDetailPage = () => {
             </div>
           </div>
         </div>
+        {/* Afficher les messages d'erreur */}
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+            {error}
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
 export default ProgramDetailPage
-

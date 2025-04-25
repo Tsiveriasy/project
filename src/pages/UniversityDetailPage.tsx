@@ -16,7 +16,7 @@ import {
   Phone,
   Globe,
 } from "lucide-react"
-import { universityService } from "../services/api-services"
+import { universityService, userService } from "../services/api-services"
 
 interface Program {
   id: number
@@ -29,14 +29,13 @@ interface Program {
   language: string
 }
 
-// Modifier l'interface University locale pour correspondre à celle importée
 interface University {
   id: number
   name: string
   location: string
   type: string
   description: string
-  image_url?: string // Rendre optionnel pour correspondre à l'interface importée
+  image_url?: string
   website: string
   rating: number
   student_count: string
@@ -70,6 +69,7 @@ const UniversityDetailPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState("overview")
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null)
+  const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
     const fetchUniversity = async () => {
@@ -80,11 +80,19 @@ const UniversityDetailPage = () => {
 
       try {
         const data = await universityService.getById(Number.parseInt(id))
-        setUniversity(data as University) // Utiliser une conversion de type explicite
+        setUniversity(data as University)
+        
+        // Vérifier si l'université est dans les favoris
+        try {
+          const savedItems = await userService.getSavedItems()
+          setIsSaved(savedItems.savedUniversities.includes(Number.parseInt(id)))
+        } catch (err) {
+          console.error("Erreur lors de la vérification des favoris:", err)
+          // Ne pas afficher d'erreur à l'utilisateur car ce n'est pas critique
+        }
       } catch (err) {
         console.error(`Erreur lors de la récupération de l'université ${id}:`, err)
         setError(`Impossible de charger les détails de l'université. Veuillez réessayer plus tard.`)
-        setIsLoading(false)
       } finally {
         setIsLoading(false)
       }
@@ -92,6 +100,26 @@ const UniversityDetailPage = () => {
 
     fetchUniversity()
   }, [id])
+
+  const handleSaveUniversity = async () => {
+    if (!university) return
+    
+    try {
+      if (isSaved) {
+        await userService.removeSavedUniversity(university.id)
+        setIsSaved(false)
+      } else {
+        await userService.saveUniversity(university.id)
+        setIsSaved(true)
+      }
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde de l'université:", err)
+      // Afficher un message d'erreur à l'utilisateur
+      setError("Une erreur est survenue lors de la sauvegarde. Veuillez réessayer.")
+      // Réinitialiser l'état après 3 secondes
+      setTimeout(() => setError(null), 3000)
+    }
+  }
 
   if (isLoading) {
     return (
@@ -156,6 +184,25 @@ const UniversityDetailPage = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left column - Main content */}
           <div className="lg:w-2/3">
+            {/* Action buttons */}
+            <div className="flex gap-4 mb-6">
+              <button
+                onClick={handleSaveUniversity}
+                className={`flex items-center gap-2 px-4 py-2 rounded-md ${
+                  isSaved
+                    ? "bg-red-100 text-red-600 hover:bg-red-200"
+                    : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                }`}
+              >
+                <Heart className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
+                {isSaved ? "Retirer des favoris" : "Sauvegarder"}
+              </button>
+              <button className="flex items-center gap-2 px-4 py-2 rounded-md bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <Share className="h-5 w-5" />
+                Partager
+              </button>
+            </div>
+
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
               <nav className="-mb-px flex space-x-8">

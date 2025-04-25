@@ -3,6 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { authService, userService, type User } from "../services/api-services"
+import type { AxiosError } from "axios"
 
 interface AuthContextType {
   user: User | null
@@ -39,24 +40,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Récupérer l'utilisateur depuis le localStorage
       const userStr = localStorage.getItem("user")
       if (userStr) {
-        const userData = JSON.parse(userStr)
-        setUser(userData)
+        try {
+          const userData = JSON.parse(userStr)
+          console.log("User data loaded from localStorage:", userData)
+          setUser(userData)
+          
+          // Refresh profile data in the background
+          const refreshedUserData = await userService.getCurrentUser()
+          if (refreshedUserData) {
+            console.log("Updated user data from API:", refreshedUserData)
+            // Make sure we preserve saved items
+            const mergedData = {
+              ...refreshedUserData,
+              saved_universities: refreshedUserData.saved_universities || userData.saved_universities || [],
+              saved_programs: refreshedUserData.saved_programs || userData.saved_programs || []
+            }
+            setUser(mergedData)
+            // Update localStorage with the latest data
+            localStorage.setItem("user", JSON.stringify(mergedData))
+          }
+        } catch (parseError) {
+          console.error("Error parsing user data from localStorage:", parseError)
+          // Invalid data in localStorage, try to fetch from API
+          const userData = await userService.getCurrentUser()
+          if (userData) {
+            setUser(userData)
+            localStorage.setItem("user", JSON.stringify(userData))
+          } else {
+            localStorage.removeItem("token")
+            localStorage.removeItem("user")
+            setUser(null)
+          }
+        }
       } else {
         // Si pas d'utilisateur dans le localStorage, essayer de le récupérer via l'API
         const userData = await userService.getCurrentUser()
         if (userData) {
+          console.log("User data fetched from API:", userData)
           setUser(userData)
+          localStorage.setItem("user", JSON.stringify(userData))
         } else {
           // Si aucun utilisateur n'est trouvé, déconnecter
           localStorage.removeItem("token")
           setUser(null)
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Error fetching user profile:", err)
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
-      setUser(null)
+      // Don't remove the token and user data on network errors
+      // This allows the app to work offline with cached user data
+      if (err instanceof Error && err.message && (err.message.includes("token") || err.message.includes("authentication"))) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        setUser(null)
+      }
     } finally {
       setLoading(false)
     }
@@ -70,17 +107,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(response.user)
       setLoading(false)
       return true
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registration error:", err)
-      if (err.response?.data?.errors) {
-        // Formatage des erreurs de validation
-        const errorMessages = Object.entries(err.response.data.errors)
-          .map(([field, messages]) => `${field}: ${messages}`)
-          .join('\n')
-        setError(errorMessages)
-      } else if (err.response?.data?.detail) {
-        setError(err.response.data.detail)
-      } else if (err.message) {
+      if (typeof err === "object" && err !== null && 'response' in err) {
+        const axiosError = err as AxiosError<any>
+        if (axiosError.response?.data?.errors) {
+          // Formatage des erreurs de validation
+          const errorMessages = Object.entries(axiosError.response.data.errors)
+            .map(([field, messages]) => `${field}: ${messages}`)
+            .join('\n')
+          setError(errorMessages)
+        } else if (axiosError.response?.data?.detail) {
+          setError(axiosError.response.data.detail)
+        } else if (err instanceof Error && err.message) {
+          setError(err.message)
+        } else {
+          setError("Une erreur est survenue lors de l'inscription.")
+        }
+      } else if (err instanceof Error && err.message) {
         setError(err.message)
       } else {
         setError("Une erreur est survenue lors de l'inscription.")
@@ -96,12 +140,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const response = await authService.login(email, password)
       if (response && response.user) {
+        console.log("Login successful, setting user:", response.user)
         setUser(response.user)
         return true
       }
       throw new Error("Réponse invalide du serveur")
-    } catch (err: any) {
-      setError(err.message || "Erreur de connexion")
+    } catch (err: unknown) {
+      console.error("Login error:", err)
+      if (err instanceof Error) {
+        setError(err.message || "Erreur de connexion")
+      } else {
+        setError("Erreur de connexion")
+      }
+      setLoading(false)
       return false
     } finally {
       setLoading(false)
@@ -125,16 +176,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(updatedUser);
       setLoading(false);
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Profile update error:", err);
-      if (err.response?.data?.errors) {
-        const errorMessages = Object.entries(err.response.data.errors)
-          .map(([field, messages]) => `${field}: ${messages}`)
-          .join('\n');
-        setError(errorMessages);
-      } else if (err.response?.data?.detail) {
-        setError(err.response.data.detail);
-      } else if (err.message) {
+      if (typeof err === "object" && err !== null && 'response' in err) {
+        const axiosError = err as AxiosError<any>
+        if (axiosError.response?.data?.errors) {
+          const errorMessages = Object.entries(axiosError.response.data.errors)
+            .map(([field, messages]) => `${field}: ${messages}`)
+            .join('\n');
+          setError(errorMessages);
+        } else if (axiosError.response?.data?.detail) {
+          setError(axiosError.response.data.detail);
+        } else if (err instanceof Error && err.message) {
+          setError(err.message);
+        } else {
+          setError("Une erreur est survenue lors de la mise à jour du profil.");
+        }
+      } else if (err instanceof Error && err.message) {
         setError(err.message);
       } else {
         setError("Une erreur est survenue lors de la mise à jour du profil.");

@@ -37,8 +37,8 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <div className="flex flex-col min-h-screen">
           <Navbar />
           <main className="flex-grow">
@@ -108,8 +108,8 @@ function App() {
           </main>
           <Footer />
         </div>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   )
 }
 

@@ -1,28 +1,24 @@
 import type React from "react"
 import { Clock, GraduationCap, Globe, Building } from "lucide-react"
 import { Link } from "react-router-dom"
+import type { Program } from "../services/api-services"
 
 interface ProgramCardProps {
-  id: number
-  name: string
-  university_name: string
-  degree_level: string
-  duration: string
-  language: string
-  tuition_fees: number
-  description?: string
+  program: Program
 }
 
-const ProgramCard: React.FC<ProgramCardProps> = ({
-  id,
-  name,
-  university_name,
-  degree_level,
-  duration,
-  language,
-  tuition_fees,
-  description,
-}) => {
+const ProgramCard: React.FC<ProgramCardProps> = ({ program }) => {
+  const {
+    id,
+    name,
+    university_name,
+    degree_level,
+    duration,
+    language,
+    tuition_fees,
+    description,
+  } = program
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="p-6">
@@ -51,7 +47,7 @@ const ProgramCard: React.FC<ProgramCardProps> = ({
 
           <div className="flex items-center text-gray-600">
             <GraduationCap className="h-5 w-5 mr-2 text-blue-600" />
-            <span>{tuition_fees.toLocaleString()}€/an</span>
+            <span>{tuition_fees?.toLocaleString()}€/an</span>
           </div>
         </div>
 
